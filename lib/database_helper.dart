@@ -64,4 +64,33 @@ Future<List<CustomerModel>> getCustomer () async{
 }
 
 
+Future<int> updateCustomer (CustomerModel customerModel)async {
+
+  Database db = await instance.database;
+
+  return await db.update(
+    "customer", 
+    customerModel.toMap(),
+    where: "id = ?",
+    whereArgs: [customerModel.id]
+  );
+
+}
+
+
+Future<int> deleteCustomer (int? id) async{
+
+Database db = await instance.database;
+
+ return await db.delete(
+   "customer",
+   where: "id = ?",
+   whereArgs: [id]
+ );
+}
+
+
+
+
+
 }

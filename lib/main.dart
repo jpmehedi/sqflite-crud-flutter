@@ -1,3 +1,6 @@
+
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:sqlite/customer_model.dart';
 import 'package:sqlite/database_helper.dart';
@@ -32,11 +35,24 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  var fNameEditingController = TextEditingController();
-  var lNameEditingController = TextEditingController();
-  var emailEditingController = TextEditingController();
+  late TextEditingController fNameEditingController;
+  late TextEditingController lNameEditingController;
+  late TextEditingController emailEditingController;
+
+  Random random = Random();
+
+ int customerId = 0;
+
+  @override
+  void initState() {
+    fNameEditingController = TextEditingController();
+    lNameEditingController  = TextEditingController();
+    emailEditingController  = TextEditingController();
+    super.initState();
+  }
   @override
   Widget build(BuildContext context) {
+    
     return Scaffold(
       appBar: AppBar(
         title: Text("Sqlite"),
@@ -67,19 +83,38 @@ class _MyHomePageState extends State<MyHomePage> {
                 ),
 
 
-                ElevatedButton(          
-                  onPressed:() async{
-                    final customer = CustomerModel(
-                        id: 2,
-                        firstName: fNameEditingController.text,
-                        lastName: lNameEditingController.text,
-                        email: emailEditingController.text
-                    );
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    ElevatedButton(          
+                      onPressed:() async{
+                        final customer = CustomerModel(
+                            id: random.nextInt(100),
+                            firstName: fNameEditingController.text,
+                            lastName: lNameEditingController.text,
+                            email: emailEditingController.text
+                        );
 
-                    await DatabaseHelper.instance.addCustomer(customer);
-                  },
-                  child: Text("Save"),
-                
+                        await DatabaseHelper.instance.addCustomer(customer);
+                      },
+                      child: Text("Save"),            
+                    ),
+                  
+                    ElevatedButton(          
+                      onPressed:() async{
+                        final customer = CustomerModel(
+                          id: customerId,
+                          firstName: fNameEditingController.text,
+                          lastName: lNameEditingController.text,
+                          email: emailEditingController.text
+                        );
+                        await DatabaseHelper.instance.updateCustomer(customer);
+                        fNameEditingController.clear();
+                      },
+                      child: Text("Update"),
+                    
+                    ),
+                  ],
                 ),
 
                 Container(
@@ -94,8 +129,31 @@ class _MyHomePageState extends State<MyHomePage> {
                       return ListView(
                         children: snapshot.data!.map((customer) {
                           return ListTile(
-                            title: Text(customer.firstName ?? ""),
-                            subtitle: Text(customer.lastName ?? "" ),
+                            trailing: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                IconButton(
+                                  onPressed: ()async{
+                                   await DatabaseHelper.instance.deleteCustomer(customer.id);
+                                  }, 
+                                  icon: Icon(Icons.delete, color: Colors.red,)
+                                ),
+                                IconButton(
+                                  onPressed: (){
+                                    setState(() {
+                                      fNameEditingController.text = customer.firstName!;
+                                      lNameEditingController.text = customer.lastName!;
+                                      emailEditingController.text = customer.email!;
+                                      customerId = customer.id!;
+                                    });
+   
+                                  }, 
+                                  icon: Icon(Icons.edit)
+                                )
+                              ],
+                            ),
+                            title: Text("${customer.firstName}" + "${customer.lastName}"),
+                            subtitle: Text("${customer.email}"),
                           );
                         }).toList(),
                       );
